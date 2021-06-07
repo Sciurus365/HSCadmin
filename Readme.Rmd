@@ -1,0 +1,41 @@
+---
+title: "Readme"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+在北大未名BBS (https://bbs.pku.edu.cn/) HSC （医学部）版近期进行的三次版务申请投票中，三位不同背景的申请者因不同的原因被投票否决。
+其中，第一名申请者ducker是19级医学部在读本科生，主要反对理由为该同学较为年轻，不能胜任。
+第二名申请者ccmesongshu是校本部19届毕业生，有一定的版务管理经验，主要反对理由为该同学为非医学部且为毕业生，不能胜任。
+第三名申请者accept是医学部16级在读长学制临床研究生，主要反对理由为该同学临床事务繁忙，不能胜任。
+
+根据未名BBS规定，版务投票为记名投票，结果公开。根据此公开数据做如下整理：
+```{r}
+library(tidyverse)
+accept_result <- read_csv("accept.csv")
+ccmesongshu_result <- read_csv("ccmesongshu.csv")
+ducker_result <- read_csv("ducker.csv")
+
+all_result <- full_join(accept_result, ccmesongshu_result, by = "ID", suffix = c(".accept", ".ccmesongshu")) %>%
+	full_join(ducker_result, by = "ID") %>%
+	mutate(choice.ducker = choice) %>%
+	select(ID, choice.accept, choice.ccmesongshu, choice.ducker)
+
+knitr::kable(all_result)
+```
+
+其中，各ID投下反对票的次数统计如下：
+```{r}
+B_result <- all_result %>%
+	rowwise() %>%
+	mutate(B_num = sum(c(choice.accept, choice.ccmesongshu, choice.ducker) == "B", na.rm = T)) %>%
+	ungroup() %>%
+	arrange(-B_num)
+
+knitr::kable(B_result)
+```
+
+
